@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palworld IV Breeding Calculator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for Inter font and general body styling */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light blue-gray background */
+            color: #334155; /* Darker text */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top for better scrolling on smaller screens */
+            min-height: 100vh;
+            padding: 2rem;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 1.5rem; /* More rounded corners */
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            padding: 2.5rem;
+            max-width: 900px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .input-field {
+            padding: 0.75rem 1rem;
+            border: 2px solid #cbd5e1; /* Light gray border */
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            color: #475569; /* Slate 700 */
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #6366f1; /* Indigo 500 */
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+        .button-primary {
+            background-color: #6366f1; /* Indigo 500 */
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            border: none;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .button-primary:hover {
+            background-color: #4f46e5; /* Indigo 600 */
+            transform: translateY(-1px);
+        }
+        .button-primary:active {
+            background-color: #4338ca; /* Indigo 700 */
+            transform: translateY(0);
+        }
+        .result-box {
+            background-color: #e0f2fe; /* Light blue for results */
+            border-left: 5px solid #38b2ac; /* Teal border */
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #1e40af; /* Darker blue for text */
+        }
+        .error-message {
+            color: #ef4444; /* Red for errors */
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #ffffff;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto; /* Center the spinner */
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-4xl font-extrabold text-center text-gray-800 mb-6">Palworld IV Breeding Calculator</h1>
+        <p class="text-center text-lg text-gray-600 mb-8">
+            Enter the IVs (0-100) for your two parent Pals and the minimum target IV you desire for their offspring.
+            The calculator will show the probability of the child meeting or exceeding those target IVs for HP, Attack, and Defense.
+        </p>
+
+        <!-- Parent IV Inputs -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <!-- Parent 1 -->
+            <div class="bg-gray-50 p-6 rounded-xl shadow-inner">
+                <h2 class="text-2xl font-bold text-gray-700 mb-4 text-center">Parent 1 IVs</h2>
+                <div class="input-group">
+                    <label for="p1-hp" class="text-gray-700 font-medium">HP IV (0-100):</label>
+                    <input type="number" id="p1-hp" class="input-field" min="0" max="100" value="100">
+                </div>
+                <div class="input-group mt-4">
+                    <label for="p1-atk" class="text-gray-700 font-medium">Attack IV (0-100):</label>
+                    <input type="number" id="p1-atk" class="input-field" min="0" max="100" value="100">
+                </div>
+                <div class="input-group mt-4">
+                    <label for="p1-def" class="text-gray-700 font-medium">Defense IV (0-100):</label>
+                    <input type="number" id="p1-def" class="input-field" min="0" max="100" value="100">
+                </div>
+            </div>
+
+            <!-- Parent 2 -->
+            <div class="bg-gray-50 p-6 rounded-xl shadow-inner">
+                <h2 class="text-2xl font-bold text-gray-700 mb-4 text-center">Parent 2 IVs</h2>
+                <div class="input-group">
+                    <label for="p2-hp" class="text-gray-700 font-medium">HP IV (0-100):</label>
+                    <input type="number" id="p2-hp" class="input-field" min="0" max="100" value="100">
+                </div>
+                <div class="input-group mt-4">
+                    <label for="p2-atk" class="text-gray-700 font-medium">Attack IV (0-100):</label>
+                    <input type="number" id="p2-atk" class="input-field" min="0" max="100" value="100">
+                </div>
+                <div class="input-group mt-4">
+                    <label for="p2-def" class="text-gray-700 font-medium">Defense IV (0-100):</label>
+                    <input type="number" id="p2-def" class="input-field" min="0" max="100" value="100">
+                </div>
+            </div>
+        </div>
+
+        <!-- Target IV Inputs (Individual) -->
+        <div class="bg-blue-50 p-6 rounded-xl shadow-inner mb-8">
+            <h2 class="text-2xl font-bold text-blue-700 mb-4 text-center">Desired Offspring IVs</h2>
+            <div class="input-group">
+                <label for="target-hp-iv" class="text-blue-700 font-medium">Minimum Target HP IV (0-100):</label>
+                <input type="number" id="target-hp-iv" class="input-field" min="0" max="100" value="100">
+            </div>
+            <div class="input-group mt-4">
+                <label for="target-atk-iv" class="text-blue-700 font-medium">Minimum Target Attack IV (0-100):</label>
+                <input type="number" id="target-atk-iv" class="input-field" min="0" max="100" value="100">
+            </div>
+            <div class="input-group mt-4">
+                <label for="target-def-iv" class="text-blue-700 font-medium">Minimum Target Defense IV (0-100):</label>
+                <input type="number" id="target-def-iv" class="input-field" min="0" max="100" value="100">
+            </div>
+        </div>
+
+        <button id="calculate-btn" class="button-primary mb-8">Calculate Probabilities</button>
+
+        <!-- Loading Indicator -->
+        <div id="loading-indicator" class="hidden text-center">
+            <div class="loading-spinner"></div>
+            <p class="text-gray-600 mt-2">Calculating...</p>
+        </div>
+
+        <!-- Results Display -->
+        <div id="results" class="hidden">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Calculation Results</h2>
+            <div class="result-box mb-4">
+                <p><strong>Probability of HP IV ≥ <span id="display-target-hp"></span>:</strong> <span id="prob-hp"></span></p>
+            </div>
+            <div class="result-box mb-4">
+                <p><strong>Probability of Attack IV ≥ <span id="display-target-atk"></span>:</strong> <span id="prob-atk"></span></p>
+            </div>
+            <div class="result-box mb-4">
+                <p><strong>Probability of Defense IV ≥ <span id="display-target-def"></span>:</strong> <span id="prob-def"></span></p>
+            </div>
+            <div class="result-box bg-emerald-100 border-emerald-500 text-emerald-800">
+                <p class="text-xl"><strong>Overall Probability (HP ≥ <span id="display-target-overall-hp"></span>, Atk ≥ <span id="display-target-overall-atk"></span>, Def ≥ <span id="display-target-overall-def"></span>):</strong> <span id="prob-overall"></span></p>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div id="error-message" class="error-message hidden text-center"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const calculateBtn = document.getElementById('calculate-btn');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const resultsDiv = document.getElementById('results');
+            const errorMessageDiv = document.getElementById('error-message');
+
+            // Get input elements
+            const p1Hp = document.getElementById('p1-hp');
+            const p1Atk = document.getElementById('p1-atk');
+            const p1Def = document.getElementById('p1-def');
+            const p2Hp = document.getElementById('p2-hp');
+            const p2Atk = document.getElementById('p2-atk');
+            const p2Def = document.getElementById('p2-def');
+            // New individual target IV inputs
+            const targetHpIv = document.getElementById('target-hp-iv');
+            const targetAtkIv = document.getElementById('target-atk-iv');
+            const targetDefIv = document.getElementById('target-def-iv');
+
+            // Get output elements
+            const probHp = document.getElementById('prob-hp');
+            const probAtk = document.getElementById('prob-atk');
+            const probDef = document.getElementById('prob-def');
+            const probOverall = document.getElementById('prob-overall');
+            const displayTargetHp = document.getElementById('display-target-hp');
+            const displayTargetAtk = document.getElementById('display-target-atk');
+            const displayTargetDef = document.getElementById('display-target-def');
+            const displayTargetOverallHp = document.getElementById('display-target-overall-hp');
+            const displayTargetOverallAtk = document.getElementById('display-target-overall-atk');
+            const displayTargetOverallDef = document.getElementById('display-target-overall-def');
+
+            // Function to validate input
+            function validateInput(value, name) {
+                const num = parseInt(value);
+                if (isNaN(num) || num < 0 || num > 100) {
+                    return `${name} must be a number between 0 and 100.`;
+                }
+                return null; // No error
+            }
+
+            /**
+             * Calculates the probability of a single IV (HP, Attack, or Defense) being
+             * greater than or equal to a specified minimum target IV.
+             *
+             * @param {number} parent1IV The IV value of the first parent for this stat.
+             * @param {number} parent2IV The IV value of the second parent for this stat.
+             * @param {number} targetMinIV The minimum desired IV value for the child.
+             * @returns {number} The probability (0-1) of the child's IV meeting the target.
+             */
+            function calculateSingleIVProbability(parent1IV, parent2IV, targetMinIV) {
+                let probability = 0;
+
+                // 30% chance to inherit from Parent 1
+                if (parent1IV >= targetMinIV) {
+                    probability += 0.30;
+                }
+
+                // 30% chance to inherit from Parent 2
+                if (parent2IV >= targetMinIV) {
+                    probability += 0.30;
+                }
+
+                // 40% chance for a random roll
+                // Probability of a random number (0-100) being >= targetMinIV
+                // There are 101 possible values (0 to 100)
+                if (targetMinIV <= 100) { // Ensure target is within valid range for random
+                    const favorableRandomOutcomes = 101 - targetMinIV; // e.g., if target is 100, only 100 is favorable (101-100=1)
+                    const probRandom = (favorableRandomOutcomes / 101) * 0.40;
+                    probability += probRandom;
+                } else {
+                    // If targetMinIV is > 100, random roll can never meet it
+                    probability += 0;
+                }
+
+                // Cap probability at 1.0 (100%) in case of floating point inaccuracies or logic where multiple parents could exceed 100% if not handled carefully
+                return Math.min(1.0, probability);
+            }
+
+            /**
+             * Main function to calculate and display all probabilities.
+             */
+            calculateBtn.addEventListener('click', () => {
+                errorMessageDiv.classList.add('hidden'); // Hide previous errors
+                resultsDiv.classList.add('hidden'); // Hide previous results
+                loadingIndicator.classList.remove('hidden'); // Show loading spinner
+
+                // Use a small delay to allow the loading indicator to render
+                setTimeout(() => {
+                    let hasError = false;
+                    const parent1IVs = {
+                        hp: parseInt(p1Hp.value),
+                        atk: parseInt(p1Atk.value),
+                        def: parseInt(p1Def.value)
+                    };
+                    const parent2IVs = {
+                        hp: parseInt(p2Hp.value),
+                        atk: parseInt(p2Atk.value),
+                        def: parseInt(p2Def.value)
+                    };
+                    // Get new individual target IVs
+                    const targetHp = parseInt(targetHpIv.value);
+                    const targetAtk = parseInt(targetAtkIv.value);
+                    const targetDef = parseInt(targetDefIv.value);
+
+                    // Validate all inputs
+                    const inputsToValidate = [
+                        { value: p1Hp.value, name: "Parent 1 HP IV" },
+                        { value: p1Atk.value, name: "Parent 1 Attack IV" },
+                        { value: p1Def.value, name: "Parent 1 Defense IV" },
+                        { value: p2Hp.value, name: "Parent 2 HP IV" },
+                        { value: p2Atk.value, name: "Parent 2 Attack IV" },
+                        { value: p2Def.value, name: "Parent 2 Defense IV" },
+                        { value: targetHpIv.value, name: "Minimum Target HP IV" },
+                        { value: targetAtkIv.value, name: "Minimum Target Attack IV" },
+                        { value: targetDefIv.value, name: "Minimum Target Defense IV" }
+                    ];
+
+                    for (const input of inputsToValidate) {
+                        const error = validateInput(input.value, input.name);
+                        if (error) {
+                            errorMessageDiv.textContent = error;
+                            errorMessageDiv.classList.remove('hidden');
+                            hasError = true;
+                            break;
+                        }
+                    }
+
+                    if (hasError) {
+                        loadingIndicator.classList.add('hidden'); // Hide loading spinner on error
+                        return;
+                    }
+
+                    // Calculate probabilities for each individual stat using their specific targets
+                    const probHpResult = calculateSingleIVProbability(parent1IVs.hp, parent2IVs.hp, targetHp);
+                    const probAtkResult = calculateSingleIVProbability(parent1IVs.atk, parent2IVs.atk, targetAtk);
+                    const probDefResult = calculateSingleIVProbability(parent1IVs.def, parent2IVs.def, targetDef);
+
+                    // Calculate overall probability (all three stats meeting their respective targets)
+                    const overallProbResult = probHpResult * probAtkResult * probDefResult;
+
+                    // Display results
+                    displayTargetHp.textContent = targetHp;
+                    displayTargetAtk.textContent = targetAtk;
+                    displayTargetDef.textContent = targetDef;
+                    displayTargetOverallHp.textContent = targetHp;
+                    displayTargetOverallAtk.textContent = targetAtk;
+                    displayTargetOverallDef.textContent = targetDef;
+
+
+                    probHp.textContent = (probHpResult * 100).toFixed(2) + '%';
+                    probAtk.textContent = (probAtkResult * 100).toFixed(2) + '%';
+                    probDef.textContent = (probDefResult * 100).toFixed(2) + '%';
+                    probOverall.textContent = (overallProbResult * 100).toFixed(2) + '%';
+
+                    resultsDiv.classList.remove('hidden');
+                    loadingIndicator.classList.add('hidden'); // Hide loading spinner after calculation
+                }, 100); // Small delay
+            });
+        });
+    </script>
+</body>
+</html>
